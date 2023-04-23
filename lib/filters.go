@@ -1,12 +1,12 @@
 package lib
 
 type MediaFilter struct {
-	DateFilter *DateFilter `json:"dateFilter"`
+	DateFilter *DateFilter `json:"dateFilter,omitempty"`
 }
 
 type DateFilter struct {
-	Dates  []Date      `json:"dates"`
-	Ranges []DateRange `json:"ranges"`
+	Dates  []Date      `json:"dates,omitempty"`
+	Ranges []DateRange `json:"ranges,omitempty"`
 }
 
 type Date struct {

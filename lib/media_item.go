@@ -3,82 +3,214 @@ package lib
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 type MediaItem struct {
-	Id         string
-	ProductUrl string
-	MimeType   string
-	Filename   string
+	Id            string
+	Description   string
+	ProductUrl    string
+	BaseUrl       string
+	MimeType      string
+	Filename      string
+	MediaMetadata MediaMetadata
+}
+
+// / Downloads a media item to a certain path
+func (m *MediaItem) Download(config *AppConfig) error {
+	var downloadPath = m.mediaDownloadPath(config)
+	var downloadUrl string
+
+	if m.MediaMetadata.Photo != nil {
+		downloadUrl = m.BaseUrl + "=d"
+	} else if m.MediaMetadata.Video != nil {
+		if m.MediaMetadata.Video.Status == "READY" {
+			downloadUrl = m.BaseUrl + "=vd"
+		} else {
+			return errors.New("Video not ready")
+		}
+	}
+
+	// create destination path
+	err := os.MkdirAll(downloadPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	// create the download request:
+	resp, err := http.Get(downloadUrl)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// read download, write file:
+	fullpath := filepath.Join(downloadPath, m.Filename)
+	fmt.Printf("Downloading %s to %s\n", m.Filename, fullpath)
+	f, err := os.Create(fullpath)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(f, resp.Body)
+	if err != nil {
+		return err
+	}
+	f.Close()
+
+	// change the file's times to the file's creation time
+	mktime := m.MediaMetadata.GetCreationTime()
+	os.Chtimes(fullpath, mktime, mktime)
+
+	return nil
+}
+
+func (m *MediaItem) mediaDownloadPath(config *AppConfig) string {
+	var path = config.BaseOutputPath
+	t, err := time.Parse(time.RFC3339, m.MediaMetadata.CreationTime)
+	if err != nil {
+		path = filepath.Join(path, "UNKNOWN")
+	} else {
+		path = filepath.Join(path, fmt.Sprintf("%d", t.Year()))
+	}
+	return path
+}
+
+type MediaMetadata struct {
+	CreationTime string
+	Height       string
+	Width        string
+	Photo        *PhotoMetadata
+	Video        *VideoMetadata
+}
+
+func (m *MediaMetadata) GetCreationTime() time.Time {
+	t, err := time.Parse(time.RFC3339, m.CreationTime)
+	if err != nil {
+		return time.Now()
+	} else {
+		return t
+	}
+}
+
+type PhotoMetadata struct {
+	CameraMake      string
+	CameraModel     string
+	FocalLength     float64
+	ApertureFNumber float64
+	IsoEquivalent   int
+	ExposureTime    string
+}
+
+type VideoMetadata struct {
+	CameraMake  string
+	CameraModel string
+	Fps         float64
+	Status      string
 }
 
 type SearchRequestBody struct {
 	PageSize  int         `json:"pageSize"`
-	PageToken *string     `json:"pageToken"`
+	PageToken *string     `json:"pageToken,omitempty"`
 	Filters   MediaFilter `json:"filters"`
 }
 
-func LoadMediaItems(client *http.Client, filter MediaFilter) (*[]MediaItem, error) {
-	var result = make([]MediaItem, 0)
+type MediaItemResponse struct {
+	Item    *MediaItem
+	BatchNr int
+	Err     error
+}
+type MediaItemsChannel chan MediaItemResponse
+
+func LoadMediaItems(client *http.Client, filter MediaFilter) MediaItemsChannel {
+	var pageSize = 100
+	var channel = make(MediaItemsChannel, pageSize)
 	var pageToken *string = nil
 	var requestBody = SearchRequestBody{
-		PageSize:  100,
+		PageSize:  pageSize,
 		PageToken: nil,
 		Filters:   filter,
 	}
-	var pageSize = 100
-	var itemCounter = 0
+	var batchNr = 0
 
-	for {
-		fmt.Printf("Working on items %d - %d...\n", itemCounter+1, itemCounter+pageSize)
-		if pageToken != nil {
-			requestBody.PageToken = pageToken
-		} else {
+	// process items in a separate thread, and use the channel as buffer
+	go func() {
+		defer close(channel)
+
+		// process in batches of pageSize items
+		for {
+			batchNr += 1
+
+			// the pageToken is a "next page" pointer for the Google API.
+			// If the last batch call returned a nextPageToken, we attach
+			// it to the next request:
+			if pageToken != nil {
+				requestBody.PageToken = pageToken
+			}
 			requestBody.PageToken = nil
+
+			// Form the request
+			requestBodyString, err := json.Marshal(requestBody)
+			if err != nil {
+				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
+				return
+			}
+
+			// execute the request:
+			ret, err := client.Post(
+				"https://photoslibrary.googleapis.com/v1/mediaItems:search",
+				"application/json",
+				bytes.NewReader(requestBodyString),
+			)
+
+			if err != nil {
+				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
+				return
+			}
+			defer ret.Body.Close()
+
+			// process the response:
+			body, err := io.ReadAll(ret.Body)
+			if err != nil {
+				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
+				return
+			}
+
+			mediaItems := MediaItemsResponse{}
+
+			err = json.Unmarshal(body, &mediaItems)
+			if err != nil {
+				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
+				return
+			}
+
+			if len(mediaItems.MediaItems) > 0 {
+				// yield returned MediaItems over the channel:
+				for _, item := range mediaItems.MediaItems {
+					// make a copy of item here: item is re-used in every
+					// loop, making &item point to the SAME variable on each loop.
+					// We need to copy it here before returing a pointer:
+					resItem := item
+					channel <- MediaItemResponse{
+						Item:    &resItem,
+						BatchNr: batchNr,
+						Err:     nil,
+					}
+				}
+			}
+			// are we done? Yes if the response did not sent a nextPageToken:
+			if mediaItems.NextPageToken == nil {
+				break
+			} else {
+				pageToken = mediaItems.NextPageToken
+			}
 		}
-		itemCounter = itemCounter + pageSize
+	}()
 
-		requestBodyString, err := json.Marshal(requestBody)
-		if err != nil {
-			return nil, err
-		}
-
-		ret, err := client.Post(
-			"https://photoslibrary.googleapis.com/v1/mediaItems:search",
-			"application/json",
-			bytes.NewReader(requestBodyString),
-		)
-
-		if err != nil {
-			return nil, err
-		}
-		defer ret.Body.Close()
-
-		body, err := io.ReadAll(ret.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		mediaItems := MediaItemsResponse{}
-
-		err = json.Unmarshal(body, &mediaItems)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(mediaItems.MediaItems) > 0 {
-			result = append(result, mediaItems.MediaItems...)
-		}
-		if mediaItems.NextPageToken == nil {
-			pageToken = nil
-			break
-		} else {
-			pageToken = mediaItems.NextPageToken
-		}
-	}
-
-	return &result, nil
+	return channel
 }

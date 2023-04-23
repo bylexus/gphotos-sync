@@ -1,6 +1,6 @@
 package lib
 
 type MediaItemsResponse struct {
-	MediaItems    []MediaItem
-	NextPageToken *string
+	MediaItems    []MediaItem `json:"mediaItems"`
+	NextPageToken *string     `json:"nextPageToken,omitempty"`
 }
