@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io"
 
-	"alexi.ch/gphoto-sync/auth"
+	auth "alexi.ch/gphoto-sync/lib"
 )
 
 func main() {
@@ -15,14 +14,16 @@ func main() {
 		panic(err)
 	}
 
-	ret, err := client.Get("https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20")
+	filter := auth.MediaFilter{
+		DateFilter: &auth.DateFilter{
+			Dates: []auth.Date{{Year: 2022}, {Year: 2023}},
+		},
+	}
+
+	items, err := auth.LoadMediaItems(client, filter)
 	if err != nil {
 		panic(err)
 	}
-	defer ret.Body.Close()
-	body, err := io.ReadAll(ret.Body)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(body))
+
+	fmt.Printf("Items read: %d\n", len(*items))
 }
