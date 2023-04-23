@@ -2,33 +2,29 @@ package main
 
 import (
 	"fmt"
-	"os"
 
-	auth "alexi.ch/gphoto-sync/lib"
+	lib "alexi.ch/gphotos-sync/lib"
 )
 
 func main() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	config := auth.AppConfig{BaseOutputPath: cwd}
+
+	config := lib.CreateAppConfig()
 	process(&config)
 }
 
-func process(config *auth.AppConfig) {
+func process(config *lib.AppConfig) {
 	// The client is prepared with the OAuth token, and will take care of authenticating
 	// and refreshing the token by itself.
-	client, err := auth.ConfigureHttpClient()
+	client, err := lib.ConfigureHttpClient(config)
 	if err != nil {
 		panic(err)
 	}
 
 	// We use the mediaItems:search request. This request accepts a filter
 	// to limit our items to certain criteria:
-	filter := auth.MediaFilter{
-		DateFilter: &auth.DateFilter{
-			Dates: []auth.Date{
+	filter := lib.MediaFilter{
+		DateFilter: &lib.DateFilter{
+			Dates: []lib.Date{
 				// {Year: 2022},
 				{Year: 2023}},
 		},
@@ -37,7 +33,7 @@ func process(config *auth.AppConfig) {
 	// We load the items:
 	// LoadMediaItems returns a channel, which whill get filled with MediaItems,
 	// and used as a queue to be processed until closed (all items processed).
-	itemsChannel := auth.LoadMediaItems(client, filter)
+	itemsChannel := lib.LoadMediaItems(client, filter)
 	counter := 0
 
 	for itemResponse := range itemsChannel {

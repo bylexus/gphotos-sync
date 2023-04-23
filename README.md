@@ -72,13 +72,13 @@ If you start the tool for the first time, it initiates the Google Authentication
 
 ***NOTE**
 
-The Google Authentication information is stored locally in a file called `google-oauth-token.json`. This file
-contains sensitive information (your authentication token). Do NOT share this file!
+The Google Authentication information is stored locally in a settings file in the User's config directory (`secrets.json`). 
+This file contains sensitive information (your authentication token). Do NOT share this file!
 
 If all goes well, the tool begins to transfer your photos. Enjoy!
 
-Notes
--------
+## Notes
+
 
 * This tool is in an early experimental stage. Do NOT expect it to work flawlessly.
 * I have not tested it over a longer period of time (e.g. until the client tokens expire). I do not yet know what happens then.

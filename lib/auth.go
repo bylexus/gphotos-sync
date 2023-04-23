@@ -2,12 +2,9 @@ package lib
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"runtime"
 
@@ -19,26 +16,31 @@ type OauthCodeResponse struct {
 	err  *error
 }
 
-func ConfigureHttpClient() (*http.Client, error) {
+func ConfigureHttpClient(config *AppConfig) (*http.Client, error) {
 	ctx := context.Background()
 	conf := &oauth2.Config{
-		ClientID:     "807308618417-j3jq2vatrfkv3eegqbmr32jaqh2dd5sf.apps.googleusercontent.com",
-		ClientSecret: "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",
+		ClientID:     config.Secrets.GoogleClientId,
+		ClientSecret: config.Secrets.GoogleClientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/photoslibrary.readonly"},
-		RedirectURL:  "http://localhost/oauth-redirect",
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://accounts.google.com/o/oauth2/v2/auth",
 			TokenURL: "https://oauth2.googleapis.com/token",
 		},
 	}
 
-	tokenPath := "google-oauth-token.json"
-	token, err := LoadToken(tokenPath)
-	if err != nil {
-		token, err = createNewToken(tokenPath, conf, ctx)
+	var err error = nil
+	token := config.Secrets.GoogleToken
+	if token == nil {
+		token, err = createNewToken(conf, ctx)
 		if err != nil {
 			return nil, err
 		}
+		config.Secrets.GoogleToken = token
+		err = SaveSecrets(config.Secrets)
+		if err != nil {
+			return nil, err
+		}
+
 	} else {
 		fmt.Println("Token loaded from token cache")
 	}
@@ -46,29 +48,7 @@ func ConfigureHttpClient() (*http.Client, error) {
 	return client, nil
 }
 
-func SaveToken(token *oauth2.Token, path string) {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-
-}
-
-func LoadToken(path string) (*oauth2.Token, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
-	return tok, err
-}
-
-func createNewToken(tokenPath string, conf *oauth2.Config, ctx context.Context) (*oauth2.Token, error) {
+func createNewToken(conf *oauth2.Config, ctx context.Context) (*oauth2.Token, error) {
 	// Redirect user to consent page to ask for permission
 	// for the scopes specified above.
 
@@ -89,7 +69,6 @@ func createNewToken(tokenPath string, conf *oauth2.Config, ctx context.Context) 
 	if err != nil {
 		return nil, err
 	}
-	SaveToken(tok, tokenPath)
 	return tok, nil
 }
 
@@ -126,7 +105,7 @@ func awaitOauthCode(conf *oauth2.Config) chan OauthCodeResponse {
 		if len(code) > 0 {
 			done <- OauthCodeResponse{code: code[0], err: nil}
 		} else {
-			err := errors.New("Auth failed")
+			err := errors.New("auth failed")
 			done <- OauthCodeResponse{code: "", err: &err}
 		}
 		close(done)
@@ -145,7 +124,7 @@ func awaitOauthCode(conf *oauth2.Config) chan OauthCodeResponse {
 	return done
 }
 
-func openBrowser(url string) {
+func openBrowser(url string) error {
 	var err error
 
 	switch runtime.GOOS {
@@ -158,7 +137,5 @@ func openBrowser(url string) {
 	default:
 		err = fmt.Errorf("unsupported platform")
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
+	return err
 }

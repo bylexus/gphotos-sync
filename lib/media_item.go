@@ -33,7 +33,7 @@ func (m *MediaItem) Download(config *AppConfig) error {
 		if m.MediaMetadata.Video.Status == "READY" {
 			downloadUrl = m.BaseUrl + "=vd"
 		} else {
-			return errors.New("Video not ready")
+			return errors.New("video not ready")
 		}
 	}
 
