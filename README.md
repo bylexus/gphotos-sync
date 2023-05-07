@@ -61,32 +61,42 @@ $ go build
 Once the setup is complete, you start the tool with the following command:
 
 ```bash
-$ ./gphoto-sync /path/to/photo/backup/folder
+$ ./gphotos-sync /path/to/photo/backup/folder
 ```
 
 If you start the tool for the first time, it initiates the Google Authentication workflow:
 
-1. Your Browser will start and asks you for your Google permissions for the gphotos-sync app
-2. After the authentication was successful, you can close the browser and the command line
+1. You will be asked for your Google Client ID and Google Client Secret. Enther those values,
+   which you can find in the Developer Console <https://console.cloud.google.com>
+2. Your Browser will start and asks you for your Google permissions for the gphotos-sync app
+3. After the authentication was successful, you can close the browser and the command line
    tool should resume its operation.
 
-***NOTE**
+***NOTE***
 
 The Google Authentication information is stored locally in a settings file in the User's config directory (`secrets.json`). 
 This file contains sensitive information (your authentication token). Do NOT share this file!
 
 If all goes well, the tool begins to transfer your photos. Enjoy!
 
-## Notes
+### Command line flags
 
+The following command line flags are interpreted to configure the sync:
+
+**`--date=YYYY[-MM[-DD]]`**:
+
+Filter by date. The date is either a full date representing a specific day, or a part of it: So `2023` will sync the whole year, while `2023-04` will sync only April, 2023.
+
+## Notes
 
 * This tool is in an early experimental stage. Do NOT expect it to work flawlessly.
 * I have not tested it over a longer period of time (e.g. until the client tokens expire). I do not yet know what happens then.
 * I will implement some additional config params in the future:
-  * credentials store location
   * credentials store encryption
-  * output folder configuration: folder level generation
+  * output folder configuration: folder level generation by template (e.g. "{year}/{month}")
+  * Filters: by year, by date range
   * ...?
 
 If you have any more ideas what this tool should be able to do, please drop me an issue or a note.
 
+(c) 2023 <alex-gsync@alexi.ch>

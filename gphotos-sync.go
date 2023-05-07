@@ -4,11 +4,17 @@ import (
 	"fmt"
 
 	lib "alexi.ch/gphotos-sync/lib"
+	"github.com/jessevdk/go-flags"
 )
 
 func main() {
+	cmdOpts := lib.CmdOptions{}
+	args, err := flags.Parse(&cmdOpts)
+	if err != nil {
+		panic(err)
+	}
+	config := lib.CreateAppConfig(args, cmdOpts)
 
-	config := lib.CreateAppConfig()
 	process(&config)
 }
 
@@ -22,13 +28,16 @@ func process(config *lib.AppConfig) {
 
 	// We use the mediaItems:search request. This request accepts a filter
 	// to limit our items to certain criteria:
-	filter := lib.MediaFilter{
-		DateFilter: &lib.DateFilter{
-			Dates: []lib.Date{
-				// {Year: 2022},
-				{Year: 2023}},
-		},
+	filter := lib.MediaFilter{}
+
+	if len(config.DateFilter) > 0 {
+		err := filter.AppendDatesFromStrings(config.DateFilter)
+		if err != nil {
+			panic(err)
+		}
 	}
+
+	fmt.Printf("Filters:\n%s\n\n", filter)
 
 	// We load the items:
 	// LoadMediaItems returns a channel, which whill get filled with MediaItems,
