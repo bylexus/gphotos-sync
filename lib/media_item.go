@@ -131,11 +131,6 @@ func LoadMediaItems(client *http.Client, filter MediaFilter) MediaItemsChannel {
 	var pageSize = 100
 	var channel = make(MediaItemsChannel, pageSize)
 	var pageToken *string = nil
-	var requestBody = SearchRequestBody{
-		PageSize:  pageSize,
-		PageToken: nil,
-		Filters:   filter,
-	}
 	var batchNr = 0
 
 	// process items in a separate thread, and use the channel as buffer
@@ -146,13 +141,18 @@ func LoadMediaItems(client *http.Client, filter MediaFilter) MediaItemsChannel {
 		for {
 			batchNr += 1
 
+			var requestBody = SearchRequestBody{
+				PageSize:  pageSize,
+				PageToken: nil,
+				Filters:   filter,
+			}
+
 			// the pageToken is a "next page" pointer for the Google API.
 			// If the last batch call returned a nextPageToken, we attach
 			// it to the next request:
 			if pageToken != nil {
 				requestBody.PageToken = pageToken
 			}
-			requestBody.PageToken = nil
 
 			// Form the request
 			requestBodyString, err := json.Marshal(requestBody)

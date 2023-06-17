@@ -91,11 +91,18 @@ Filter by date. The date is either a full date representing a specific day, or a
 
 * This tool is in an early experimental stage. Do NOT expect it to work flawlessly.
 * I have not tested it over a longer period of time (e.g. until the client tokens expire). I do not yet know what happens then.
-* I will implement some additional config params in the future:
-  * credentials store encryption
-  * output folder configuration: folder level generation by template (e.g. "{year}/{month}")
-  * Filters: by year, by date range
-  * ...?
+* I will implement some additional config params in the future, see Wishlist below
+
+## Wishlist
+
+* multiple parallel download connections
+* credentials store encryption
+* output folder configuration: folder level generation by template (e.g. "{year}/{month}")
+* Filters: by year, by date range
+* Skip already downloaded files (e.g. check by filename, change date (?))
+
+
+
 
 If you have any more ideas what this tool should be able to do, please drop me an issue or a note.
 

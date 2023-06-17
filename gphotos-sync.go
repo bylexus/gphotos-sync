@@ -46,14 +46,17 @@ func process(config *lib.AppConfig) {
 	counter := 0
 
 	for itemResponse := range itemsChannel {
+		// copy itemResponse, as it is re-used on each loop run:
+		workingItem := itemResponse
 		counter += 1
 		fmt.Printf("Working on Batch %d, item %d...\n", itemResponse.BatchNr, counter)
-		if itemResponse.Err != nil {
-			fmt.Printf("ERROR: %v\n", itemResponse.Err)
+		if workingItem.Err != nil {
+			fmt.Printf("ERROR: %v\n", workingItem.Err)
 		} else {
 			// process item
-			fmt.Printf("   Filename: %s\n", itemResponse.Item.Filename)
-			itemResponse.Item.Download(config)
+			// TODO: parallelize the download:
+			fmt.Printf("   Filename: %s\n", workingItem.Item.Filename)
+			workingItem.Item.Download(config)
 		}
 	}
 	fmt.Printf("Items processed: %d\n", counter)
