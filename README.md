@@ -83,9 +83,27 @@ If all goes well, the tool begins to transfer your photos. Enjoy!
 
 The following command line flags are interpreted to configure the sync:
 
+**`-h, --help`**:
+
+Prints a brief help
+
 **`--date=YYYY[-MM[-DD]]`**:
 
 Filter by date. The date is either a full date representing a specific day, or a part of it: So `2023` will sync the whole year, while `2023-04` will sync only April, 2023.
+
+**`-t nr, --threads=nr`**:
+
+Number of concurrent download threads to use, defaults to 5. Use a smaller number on slow network connections.
+If you have a 100mbps connection or more, 5 or more threads are much faster.
+
+**`-f, --force`**:
+
+Force file override: If a local file already exists with the same name, it is overridden. Default is to skip.
+
+**`-n, --force-newer`**:
+
+Force file override for newer remote files only: If a local file already exists with the same name, it is overridden
+if the remote file is newer (and only then). Default is to skip.
 
 ## Limitations
 
@@ -100,14 +118,14 @@ Filter by date. The date is either a full date representing a specific day, or a
 
 ## Wishlist
 
-* multiple parallel download connections
-* credentials store encryption
-* output folder configuration: folder level generation by template (e.g. "{year}/{month}")
-* Filters: by year, by date range
-* Skip already downloaded files (e.g. check by filename, change date (?))
-* configure batch size (today: fix to 100 photos per batch)
-* Extract photo metadata from google api and embed them as EXIF data
-* Extract GPS data: Unfortunately, it seems that those are NOT available through the Photos API. It _may_ be a possibility to
+* [x] multiple parallel download connections
+* [ ] credentials store encryption
+* [ ] output folder configuration: folder level generation by template (e.g. "{year}/{month}")
+* [ ] Filters: by date range
+* [x] Filters: by year
+* [x] Skip already downloaded files (e.g. check by filename, change date (?))
+* [ ] Extract photo metadata from google api and embed them as EXIF data
+* [ ] Extract GPS data: Unfortunately, it seems that those are NOT available through the Photos API. It _may_ be a possibility to
   use Google Drive: https://www.labnol.org/code/20059-image-exif-and-location
 
 

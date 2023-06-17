@@ -49,20 +49,21 @@ func process(config *lib.AppConfig) {
 	// and used as a queue to be processed until closed (all items processed).
 	itemsChannel := lib.LoadMediaItems(client, filter)
 	counter := 0
+	dm := lib.NewDownloadManager(config)
 
 	for itemResponse := range itemsChannel {
 		// copy itemResponse, as it is re-used on each loop run:
 		workingItem := itemResponse
-		counter += 1
-		fmt.Printf("Working on Batch %d, item %d...\n", itemResponse.BatchNr, counter)
 		if workingItem.Err != nil {
 			fmt.Printf("ERROR: %v\n", workingItem.Err)
 		} else {
 			// process item
-			// TODO: parallelize the download:
-			fmt.Printf("   Filename: %s\n", workingItem.Item.Filename)
-			workingItem.Item.Download(config)
+			counter += 1
+			fmt.Printf("Enqueuing item #%d: %s\n", counter, workingItem.Item.Filename)
+			dm.Enqueue(*workingItem.Item)
 		}
 	}
+	dm.DoneEnqueuing()
+	dm.Wait()
 	fmt.Printf("Items processed: %d\n", counter)
 }
