@@ -6,14 +6,18 @@ import (
 )
 
 type CmdOptions struct {
-	Date []string `long:"date" required:"false" description:"Set a single date filter. Use the format YYYY[-MM[-DD]]. Can be applied multiple times."`
+	Date               []string `long:"date" value-name:"YYYY[-MM[-DD]]" description:"Set a single date filter, in the format YYYY-MM-DD. Partial date possible.\nExample: --date=2023 will fetch all photos from the year 2023."`
+	ForceOverride      bool     `long:"force" short:"f" required:"false" description:"Overrides local files in any case. Default is skip if a file exists locally."`
+	ForceNewerOverride bool     `long:"force-newer" short:"n" required:"false" description:"Override local files only if the remote file is newer, skip otherwise"`
 }
 
 type AppConfig struct {
 	BaseOutputPath string
 	Secrets        *Secrets
 
-	DateFilter []string
+	DateFilter         []string
+	ForceOverride      bool
+	ForceNewerOverride bool
 }
 
 func CreateAppConfig(args []string, opts CmdOptions) AppConfig {
@@ -28,9 +32,11 @@ func CreateAppConfig(args []string, opts CmdOptions) AppConfig {
 		os.Exit(1)
 	}
 	conf := AppConfig{
-		BaseOutputPath: outPath,
-		Secrets:        LoadSecrets(),
-		DateFilter:     opts.Date,
+		BaseOutputPath:     outPath,
+		Secrets:            LoadSecrets(),
+		DateFilter:         opts.Date,
+		ForceOverride:      opts.ForceOverride,
+		ForceNewerOverride: opts.ForceNewerOverride,
 	}
 	if err := conf.Secrets.EnsureUserSecrets(); err != nil {
 		panic(err)

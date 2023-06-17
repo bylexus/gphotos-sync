@@ -43,6 +43,14 @@ func (m *MediaItem) Download(config *AppConfig) error {
 		return err
 	}
 
+	// check destination file:
+	// if it exists, and its creation date is the same as the
+	// file to download, skip it:
+	fullpath := filepath.Join(downloadPath, m.Filename)
+	if !m.shouldOverride(fullpath, config) {
+		return nil
+	}
+
 	// create the download request:
 	resp, err := http.Get(downloadUrl)
 	if err != nil {
@@ -51,17 +59,16 @@ func (m *MediaItem) Download(config *AppConfig) error {
 	defer resp.Body.Close()
 
 	// read download, write file:
-	fullpath := filepath.Join(downloadPath, m.Filename)
 	fmt.Printf("Downloading %s to %s\n", m.Filename, fullpath)
 	f, err := os.Create(fullpath)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
 		return err
 	}
-	f.Close()
 
 	// change the file's times to the file's creation time
 	mktime := m.MediaMetadata.GetCreationTime()
@@ -213,4 +220,28 @@ func LoadMediaItems(client *http.Client, filter MediaFilter) MediaItemsChannel {
 	}()
 
 	return channel
+}
+
+func (m *MediaItem) shouldOverride(destFile string, config *AppConfig) bool {
+	if config.ForceOverride {
+		return true
+	}
+
+	// check destination file:
+	// if it exists, and its mod date >= the remote file, skip the download
+	info, err := os.Stat(destFile)
+	if err == nil {
+		if info.Mode().IsRegular() && !config.ForceNewerOverride {
+			fmt.Printf("Skipping %s: local file exists\n", m.Filename)
+			return false
+		}
+		if info.ModTime().Compare(m.MediaMetadata.GetCreationTime()) == 0 {
+			fmt.Printf("Skipping %s: local file has same timestamp\n", m.Filename)
+			return false
+		} else if info.ModTime().Compare(m.MediaMetadata.GetCreationTime()) > 0 {
+			fmt.Printf("Skipping %s: local file is newer\n", m.Filename)
+			return false
+		}
+	}
+	return true
 }
