@@ -110,6 +110,30 @@ if the remote file is newer (and only then). Default is to skip.
 * Downloaded photos include the original EXIF data, EXCEPT the location data: This seems to be a Google Photos API limitation, officially enforced by Google.
   To this moment, there seems to be no solution around that.
 
+## More on building
+
+You can use the Makefile to help building the tool and cross-compile to several os'es and architectures:
+
+```sh
+# default build:
+make
+
+# build for windows:
+make gphotos-sync.exe
+
+# create all releases:
+make release
+
+# clean build artifacts:
+make clean
+```
+
+Note that the Makefile is only supported on Unix-like operating systems.
+
+### Releases
+
+
+
 ## Notes
 
 * This tool is in an early experimental stage. Do NOT expect it to work flawlessly.
@@ -118,18 +142,7 @@ if the remote file is newer (and only then). Default is to skip.
 
 ## Wishlist
 
-* [x] multiple parallel download connections
-* [ ] credentials store encryption
-* [ ] output folder configuration: folder level generation by template (e.g. "{year}/{month}")
-* [ ] Filters: by date range
-* [x] Filters: by year
-* [x] Skip already downloaded files (e.g. check by filename, change date (?))
-* [ ] Extract photo metadata from google api and embed them as EXIF data
-* [ ] Extract GPS data: Unfortunately, it seems that those are NOT available through the Photos API. It _may_ be a possibility to
-  use Google Drive: https://www.labnol.org/code/20059-image-exif-and-location
-* [ ] Improve logging and error handling: Separate errors on stderr, use a logger
-* [ ] Sync back: Upload changed / missing photos to Google Photos
-* [ ] make "releases" infrastructure to publish pre-compiled binaries
+See [CHANGELOG](./CHANGELOG.md)
 
 
 If you have any more ideas what this tool should be able to do, please drop me an issue or a note.
