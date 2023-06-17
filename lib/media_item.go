@@ -172,10 +172,10 @@ func LoadMediaItems(client *http.Client, filter MediaFilter) MediaItemsChannel {
 				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
 				return
 			}
-			defer ret.Body.Close()
 
 			// process the response:
 			body, err := io.ReadAll(ret.Body)
+			ret.Body.Close()
 			if err != nil {
 				channel <- MediaItemResponse{Item: nil, BatchNr: batchNr, Err: err}
 				return

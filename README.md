@@ -87,6 +87,11 @@ The following command line flags are interpreted to configure the sync:
 
 Filter by date. The date is either a full date representing a specific day, or a part of it: So `2023` will sync the whole year, while `2023-04` will sync only April, 2023.
 
+## Limitations
+
+* Downloaded photos include the original EXIF data, EXCEPT the location data: This seems to be a Google Photos API limitation, officially enforced by Google.
+  To this moment, there seems to be no solution around that.
+
 ## Notes
 
 * This tool is in an early experimental stage. Do NOT expect it to work flawlessly.
@@ -100,8 +105,10 @@ Filter by date. The date is either a full date representing a specific day, or a
 * output folder configuration: folder level generation by template (e.g. "{year}/{month}")
 * Filters: by year, by date range
 * Skip already downloaded files (e.g. check by filename, change date (?))
-
-
+* configure batch size (today: fix to 100 photos per batch)
+* Extract photo metadata from google api and embed them as EXIF data
+* Extract GPS data: Unfortunately, it seems that those are NOT available through the Photos API. It _may_ be a possibility to
+  use Google Drive: https://www.labnol.org/code/20059-image-exif-and-location
 
 
 If you have any more ideas what this tool should be able to do, please drop me an issue or a note.
