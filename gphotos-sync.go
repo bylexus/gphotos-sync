@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	lib "alexi.ch/gphotos-sync/lib"
 	"github.com/jessevdk/go-flags"
@@ -11,7 +12,11 @@ func main() {
 	cmdOpts := lib.CmdOptions{}
 	args, err := flags.Parse(&cmdOpts)
 	if err != nil {
-		panic(err)
+		if flags.WroteHelp(err) {
+			os.Exit(0)
+		} else {
+			panic(err)
+		}
 	}
 	config := lib.CreateAppConfig(args, cmdOpts)
 
