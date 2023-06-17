@@ -9,7 +9,7 @@ so this tool fills this gap.
 Luckily, Google Photos comes with a REST API, which allows querying and downloading the Photos library.
 This script is a very simple approach to fetch your Google Photos automatically.
 
-**Note**: This is a very first draft of the script. It is NOT tested thoroughly, and it is NOT implemented in a secure and stable way! Be aware!
+**Note**: This is a very early version. It is NOT tested thoroughly, and it is NOT implemented in a secure and stable way! Be aware of daemons!
 
 ## Requirements
 
@@ -127,6 +127,9 @@ if the remote file is newer (and only then). Default is to skip.
 * [ ] Extract photo metadata from google api and embed them as EXIF data
 * [ ] Extract GPS data: Unfortunately, it seems that those are NOT available through the Photos API. It _may_ be a possibility to
   use Google Drive: https://www.labnol.org/code/20059-image-exif-and-location
+* [ ] Improve logging and error handling: Separate errors on stderr, use a logger
+* [ ] Sync back: Upload changed / missing photos to Google Photos
+* [ ] make "releases" infrastructure to publish pre-compiled binaries
 
 
 If you have any more ideas what this tool should be able to do, please drop me an issue or a note.
