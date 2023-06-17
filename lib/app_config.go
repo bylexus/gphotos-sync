@@ -7,8 +7,8 @@ import (
 
 type CmdOptions struct {
 	Date               []string `long:"date" value-name:"YYYY[-MM[-DD]]" description:"Set a single date filter, in the format YYYY-MM-DD. Partial date possible.\nExample: --date=2023 will fetch all photos from the year 2023."`
-	ForceOverride      bool     `long:"force" short:"f" required:"false" description:"Overrides local files in any case. Default is skip if a file exists locally."`
-	ForceNewerOverride bool     `long:"force-newer" short:"n" required:"false" description:"Override local files only if the remote file is newer, skip otherwise"`
+	ForceOverride      bool     `long:"force" short:"f" description:"Overrides local files in any case. Default is skip if a file exists locally."`
+	ForceNewerOverride bool     `long:"force-newer" short:"n" description:"Override local files only if the remote file is newer, skip otherwise"`
 }
 
 type AppConfig struct {
