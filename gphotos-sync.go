@@ -41,6 +41,12 @@ func process(config *lib.AppConfig) {
 			panic(err)
 		}
 	}
+	if len(config.DateRangeFilter) > 0 {
+		err := filter.AppendDateRangesFromStrings(config.DateRangeFilter)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	fmt.Printf("Filters:\n%s\n\n", filter)
 
@@ -59,7 +65,7 @@ func process(config *lib.AppConfig) {
 		} else {
 			// process item
 			counter += 1
-			fmt.Printf("Enqueuing item #%d: %s\n", counter, workingItem.Item.Filename)
+			// fmt.Printf("Enqueuing item #%d: %s\n", counter, workingItem.Item.Filename)
 			dm.Enqueue(*workingItem.Item)
 		}
 	}
