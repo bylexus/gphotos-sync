@@ -90,6 +90,16 @@ Prints a brief help
 **`--date=YYYY[-MM[-DD]]`**:
 
 Filter by date. The date is either a full date representing a specific day, or a part of it: So `2023` will sync the whole year, while `2023-04` will sync only April, 2023.
+The `--date=` parameter can be defined up to 5 times (google api limitation).
+
+**`--date-range=YYYY[-MM[-DD]]:YYYY[-MM[-DD]]`**:
+
+Filter by a date range. Define start and end date in the format YYYY-MM-DD:YYYY-MM-DD. Partial dates possible, BUT startDate and endDates must be of the same format.
+
+Example: 
+
+`gphotos-sync --date-range=2023-04-01:2023-05-15 dest/` will fetch all photos from April 1st, 2023, to Mid may, 2023
+The `--date-range=` parameter can be defined up to 5 times (google api limitation).
 
 **`-t nr, --threads=nr`**:
 

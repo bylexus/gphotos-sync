@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve logging and error handling: Separate errors on stderr, use a logger
 - Sync back: Upload changed / missing photos to Google Photos
 - make "releases" infrastructure to publish pre-compiled binaries
+- date filters: remove limitation of max 5 date filters: create multiple jobs when needed
 
 ## [Unreleased]
 
