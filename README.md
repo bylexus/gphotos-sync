@@ -11,6 +11,20 @@ This script is a very simple approach to fetch your Google Photos automatically.
 
 **Note**: This is a very early version. It is NOT tested thoroughly, and it is NOT implemented in a secure and stable way! Be aware of daemons!
 
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Step 1: Enable the Photos API](#step-1-enable-the-photos-api)
+  - [Step 2: Create a Google OAuth 2.0 Client ID](#step-2-create-a-google-oauth-20-client-id)
+  - [Step 3: Build the program](#step-3-build-the-program)
+- [Usage](#usage)
+  - [Command line flags](#command-line-flags)
+- [Limitations](#limitations)
+- [More on building](#more-on-building)
+  - [Releases](#releases)
+- [Notes](#notes)
+- [Wishlist](#wishlist)
+
+
 ## Requirements
 
 * The Go tools, if you want to compile it by yourself

@@ -20,8 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- bug: Fixing Date bug: 1st and last of day/month caused a wrong format error
-- feature: by date range: It is now possible to filter by date range: `--date-range=2023-04-01:2023-05-15`
+### Fixed
+
+- Fixing Date bug: 1st and last of day/month caused a wrong format error
+
+### Added
+
+- Filter by date range: It is now possible to filter by date range: `--date-range=2023-04-01:2023-05-15`
 
 ## [0.1.0] - 2023-06-17
 
