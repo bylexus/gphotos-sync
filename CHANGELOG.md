@@ -15,10 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   use Google Drive: https://www.labnol.org/code/20059-image-exif-and-location
 - Improve logging and error handling: Separate errors on stderr, use a logger
 - Sync back: Upload changed / missing photos to Google Photos
-- make "releases" infrastructure to publish pre-compiled binaries
 - date filters: remove limitation of max 5 date filters: create multiple jobs when needed
 
-## [Unreleased]
+## [0.2.0] - 2023-06-20
 
 ### Fixed
 
@@ -27,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Filter by date range: It is now possible to filter by date range: `--date-range=2023-04-01:2023-05-15`
+- cross-compile releases: use `make release` to build multiple binaries for windows, linux, macos
 
 ## [0.1.0] - 2023-06-17
 
