@@ -91,6 +91,8 @@ If you start the tool for the first time, it initiates the Google Authentication
 The Google Authentication information is stored locally in a settings file in the User's config directory (`secrets.json`). 
 This file contains sensitive information (your authentication token). Do NOT share this file!
 
+(On a MacOS, this file is stored in the `~/Library/Application Support/gphotos-sync` folder.)
+
 If all goes well, the tool begins to transfer your photos. Enjoy!
 
 ### Command line flags
